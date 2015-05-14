@@ -3,8 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:amazon="http://schemas.android.com/apk/lib/com.amazon.device.ads"
     xmlns:rim="http://www.blackberry.com/ns/widgets"
-    id="com.phonegap.plugins.PushPlugin"
-    version="2.4.0">
+    id="com.tonikorin.cordova.plugin.PushPlugin"
+    version="1.0.0">
 
   <name>PushPlugin</name>
 	<author>Bob Easterday</author>
@@ -12,10 +12,13 @@
 	<description>
 		This plugin allows your application to receive push notifications on Android, iOS, WP8 and Windows8 devices.
     Android uses Google Cloud Messaging.
-    iOS uses Apple APNS Notifications.
+    iOS uses Apple APNS Notifications (+ experimental Silent Notification support).
     WP8 uses Microsoft MPNS Notifications.
     Windows8 uses Microsoft WNS Notifications.
+    This is just a fork of https://github.com/jbeuckm/PushPlugin.
 	</description>
+    
+    <repo>https://github.com/ToniKorin/PushPlugin</repo>
 
 	<license>MIT</license>
 
