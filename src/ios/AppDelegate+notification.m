@@ -17,7 +17,7 @@ static char launchNotificationKey;
 
 - (id) getCommandInstance:(NSString*)className
 {
-	return [self.viewController getCommandInstance:className];
+    return [self.viewController getCommandInstance:className];
 }
 
 // its dangerous to override a method from within a category.
@@ -33,28 +33,32 @@ static char launchNotificationKey;
 
 - (AppDelegate *)swizzled_init
 {
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(createNotificationChecker:)
-               name:@"UIApplicationDidFinishLaunchingNotification" object:nil];
-	
-	// This actually calls the original init method over in AppDelegate. Equivilent to calling super
-	// on an overrided method, this is not recursive, although it appears that way. neat huh?
-	return [self swizzled_init];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(createNotificationChecker:)
+                                                 name:@"UIApplicationDidFinishLaunchingNotification" object:nil];
+    
+    // This actually calls the original init method over in AppDelegate. Equivilent to calling super
+    // on an overrided method, this is not recursive, although it appears that way. neat huh?
+    return [self swizzled_init];
 }
 
 // This code will be called immediately after application:didFinishLaunchingWithOptions:. We need
 // to process notifications in cold-start situations
 - (void)createNotificationChecker:(NSNotification *)notification
 {
-	if (notification)
-	{
-		NSDictionary *launchOptions = [notification userInfo];
-		if (launchOptions)
-			self.launchNotification = [launchOptions objectForKey: @"UIApplicationLaunchOptionsRemoteNotificationKey"];
-	}
+    if (notification)
+    {
+        NSDictionary *launchOptions = [notification userInfo];
+        if (launchOptions)
+            self.launchNotification = [launchOptions objectForKey: @"UIApplicationLaunchOptionsRemoteNotificationKey"];
+    }
 }
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
     PushPlugin *pushHandler = [self getCommandInstance:@"PushPlugin"];
+    if (application.applicationState == UIApplicationStateActive)
+        pushHandler.isInline = YES;
+    else
+        pushHandler.isInline = NO;
     [pushHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
 }
 
@@ -66,38 +70,30 @@ static char launchNotificationKey;
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler
 {
     NSLog(@"didReceiveNotification");
-
-    // Get application state for iOS4.x+ devices, otherwise assume active
-    UIApplicationState appState = UIApplicationStateActive;
-    if ([application respondsToSelector:@selector(applicationState)]) {
-        appState = application.applicationState;
-    }
-
     PushPlugin *pushHandler = [self getCommandInstance:@"PushPlugin"];
     pushHandler.notificationMessage = userInfo;
-    if (appState == UIApplicationStateActive)
+    if (application.applicationState == UIApplicationStateActive)
         pushHandler.isInline = YES;
     else
         pushHandler.isInline = NO;
     [pushHandler notificationReceived];
-
-//    handler(UIBackgroundFetchResultNewData);
+    
     [VBSingleton sharedInstance].backgroundHandler = handler;
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     
     NSLog(@"active");
-    
     //zero badge
     application.applicationIconBadgeNumber = 0;
-
+    
     if (self.launchNotification) {
         PushPlugin *pushHandler = [self getCommandInstance:@"PushPlugin"];
-		
+        pushHandler.isInline = YES;
         pushHandler.notificationMessage = self.launchNotification;
         self.launchNotification = nil;
         [pushHandler performSelectorOnMainThread:@selector(notificationReceived) withObject:pushHandler waitUntilDone:NO];
+
     }
 }
 
@@ -105,7 +101,7 @@ static char launchNotificationKey;
 // http://developer.apple.com/library/ios/#documentation/cocoa/conceptual/objectivec/Chapters/ocAssociativeReferences.html
 - (NSMutableArray *)launchNotification
 {
-   return objc_getAssociatedObject(self, &launchNotificationKey);
+    return objc_getAssociatedObject(self, &launchNotificationKey);
 }
 
 - (void)setLaunchNotification:(NSDictionary *)aDictionary
