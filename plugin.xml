@@ -4,18 +4,18 @@
     xmlns:amazon="http://schemas.android.com/apk/lib/com.amazon.device.ads"
     xmlns:rim="http://www.blackberry.com/ns/widgets"
     id="com.tonikorin.cordova.plugin.PushPlugin"
-    version="1.0.1">
+    version="1.1.0">
 
   <name>PushPlugin</name>
 	<author>Bob Easterday</author>
 
 	<description>
 		This plugin allows your application to receive push notifications on Android, iOS, WP8 and Windows8 devices.
-    Android uses Google Cloud Messaging.
+    Android uses Google Cloud Messaging (+ experimental background task support).
     iOS uses Apple APNS Notifications (+ experimental Silent Notification support).
     WP8 uses Microsoft MPNS Notifications.
     Windows8 uses Microsoft WNS Notifications.
-    This is just a fork of https://github.com/jbeuckm/PushPlugin.
+    This is a fork of https://github.com/jbeuckm/PushPlugin. and then enhanced with Android BG support.
 	</description>
     
     <repo>https://github.com/ToniKorin/PushPlugin</repo>

@@ -27,7 +27,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 	@Override
 	public void onRegistered(Context context, String regId) {
 
-		Log.v(TAG, "onRegistered: "+ regId);
+		Log.v(TAG, "onRegistered: " + regId);
 
 		JSONObject json;
 
@@ -55,29 +55,38 @@ public class GCMIntentService extends GCMBaseIntentService {
 		Log.d(TAG, "onUnregistered - regId: " + regId);
 	}
 
-	@Override
-	protected void onMessage(Context context, Intent intent) {
-		Log.d(TAG, "onMessage - context: " + context);
+    @Override
+    protected void onMessage(Context context, Intent intent) {
+        Log.d(TAG, "onMessage - context: " + context);
 
-		// Extract the payload from the message
-		Bundle extras = intent.getExtras();
-		if (extras != null)
-		{
-			// if we are in the foreground, just surface the payload, else post it to the statusbar
+        // Extract the payload from the message
+        Bundle extras = intent.getExtras();
+        if (extras != null)
+        {
+            // if we are in the foreground, just surface the payload, else post it to the statusbar
             if (PushPlugin.isInForeground()) {
-				extras.putBoolean("foreground", true);
+                extras.putBoolean("foreground", true);
                 PushPlugin.sendExtras(extras);
-			}
-			else {
-				extras.putBoolean("foreground", false);
-
+            }
+            else {
+                extras.putBoolean("foreground", false);
                 // Send a notification if there is a message
                 if (extras.getString("message") != null && extras.getString("message").length() != 0) {
                     createNotification(context, extras);
                 }
+				// E.g. the Cordova Background Plug-in has to be in use to process the payload
+				if(PushPlugin.receiveNotificationInBackground() && PushPlugin.isActive()) {
+					PushPlugin.sendExtras(extras);
+				}
+				// Optionally start the user defined Android background service
+				String serviceClassName = extras.getString("service");
+				if(serviceClassName != null && /* And app killed (or optionally also if suspended) */
+						(!PushPlugin.isActive() || PushPlugin.startServiceAlwaysInBackground() )) {
+					startBackgroundService(context, intent, serviceClassName);
+				}
             }
         }
-	}
+    }
 
 	public void createNotification(Context context, Bundle extras)
 	{
@@ -141,13 +150,21 @@ public class GCMIntentService extends GCMBaseIntentService {
 				context
 					.getPackageManager()
 					.getApplicationLabel(context.getApplicationInfo());
-		
 		return (String)appName;
 	}
 	
 	@Override
 	public void onError(Context context, String errorId) {
 		Log.e(TAG, "onError - errorId: " + errorId);
+	}
+
+	private void startBackgroundService(Context context, Intent intent, String serviceClassName)
+	{
+		Log.d(TAG, "startBackgroundService");
+		Intent serviceIntent = new Intent();
+		serviceIntent.putExtras(intent);
+		serviceIntent.setClassName(context.getApplicationContext(), serviceClassName);
+		startService(serviceIntent);
 	}
 
 }
