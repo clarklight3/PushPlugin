@@ -9,6 +9,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -127,6 +128,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 		String msgcnt = extras.getString("msgcnt");
 		if (msgcnt != null) {
 			mBuilder.setNumber(Integer.parseInt(msgcnt));
+		} else {
+			setOptAutoMessageCount(context, mBuilder);
 		}
 
 		int notId = 0;
@@ -142,6 +145,18 @@ public class GCMIntentService extends GCMBaseIntentService {
 		}
 
 		mNotificationManager.notify((String) appName, notId, mBuilder.build());
+	}
+
+	private void setOptAutoMessageCount(Context context, NotificationCompat.Builder mBuilder) {
+		SharedPreferences sp = context.getSharedPreferences(PushPlugin.TAG, Context.MODE_PRIVATE);
+		int count = sp.getInt(PushPlugin.MESSAGE_COUNT, -1);
+		if (count >= 0){
+			count += 1;
+			mBuilder.setNumber(count);
+			SharedPreferences.Editor editor = sp.edit();
+			editor.putInt(PushPlugin.MESSAGE_COUNT, count);
+			editor.commit();
+		}
 	}
 
 	private static String getAppName(Context context)

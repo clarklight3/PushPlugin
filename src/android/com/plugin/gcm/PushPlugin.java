@@ -2,6 +2,7 @@ package com.plugin.gcm;
 
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import com.google.android.gcm.GCMRegistrar;
@@ -24,6 +25,8 @@ public class PushPlugin extends CordovaPlugin {
 
 	public static final String REGISTER = "register";
 	public static final String UNREGISTER = "unregister";
+	public static final String SET_AUTO_MESSAGE_COUNT = "setAutoMessageCount";
+	public static final String MESSAGE_COUNT = "messageCount";
 	public static final String EXIT = "exit";
 
 	private static CordovaWebView gWebView;
@@ -92,6 +95,17 @@ public class PushPlugin extends CordovaPlugin {
 			Log.v(TAG, "UNREGISTER");
 			result = true;
 			callbackContext.success();
+		} else if (SET_AUTO_MESSAGE_COUNT.equals(action)) {
+			Log.v(TAG, "setAutoMessageCount");
+			int count = data.optInt(0,0);
+			SharedPreferences sp = getApplicationContext().getSharedPreferences(TAG, Context.MODE_PRIVATE);
+			SharedPreferences.Editor editor = sp.edit();
+			if ( count >= 0 ){
+				editor.putInt(MESSAGE_COUNT, count);
+			} else {
+				editor.remove(MESSAGE_COUNT);
+			}
+			editor.commit();
 		} else {
 			result = false;
 			Log.e(TAG, "Invalid action : " + action);
