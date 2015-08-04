@@ -9,7 +9,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -20,7 +19,7 @@ import com.google.android.gcm.GCMBaseIntentService;
 public class GCMIntentService extends GCMBaseIntentService {
 
 	private static final String TAG = "GCMIntentService";
-
+	
 	public GCMIntentService() {
 		super("GCMIntentService");
 	}
@@ -28,7 +27,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 	@Override
 	public void onRegistered(Context context, String regId) {
 
-		Log.v(TAG, "onRegistered: " + regId);
+		Log.v(TAG, "onRegistered: "+ regId);
 
 		JSONObject json;
 
@@ -65,28 +64,21 @@ public class GCMIntentService extends GCMBaseIntentService {
 		if (extras != null)
 		{
 			// if we are in the foreground, just surface the payload, else post it to the statusbar
-			if (PushPlugin.isInForeground()) {
+            if (PushPlugin.isInForeground()) {
 				extras.putBoolean("foreground", true);
-				PushPlugin.sendExtras(extras);
+                PushPlugin.sendExtras(extras);
 			}
 			else {
 				extras.putBoolean("foreground", false);
-				// Send a notification if there is a message
-				if (extras.getString("message") != null && extras.getString("message").length() != 0) {
-					createNotification(context, extras);
-				}
-				// E.g. the Cordova Background Plug-in has to be in use to process the payload
-				if(PushPlugin.receiveNotificationInBackground() && PushPlugin.isActive()) {
-					PushPlugin.sendExtras(extras);
-				}
-				// Optionally start the user defined Android background service
-				String serviceClassName = extras.getString("service");
-				if(serviceClassName != null && /* And app killed (or optionally also if suspended) */
-						(!PushPlugin.isActive() || PushPlugin.startServiceAlwaysInBackground() )) {
-					startBackgroundService(context, intent, serviceClassName);
-				}
-			}
-		}
+
+                // Send a notification if there is a message
+                if (extras.getString("message") != null && extras.getString("message").length() != 0) {
+                	                PushPlugin.sendExtras(extras);
+
+                    createNotification(context, extras);
+                }
+            }
+        }
 	}
 
 	public void createNotification(Context context, Bundle extras)
@@ -99,7 +91,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		notificationIntent.putExtra("pushBundle", extras);
 
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
+		
 		int defaults = Notification.DEFAULT_ALL;
 
 		if (extras.getString("defaults") != null) {
@@ -107,7 +99,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 				defaults = Integer.parseInt(extras.getString("defaults"));
 			} catch (NumberFormatException e) {}
 		}
-
+		
 		NotificationCompat.Builder mBuilder =
 			new NotificationCompat.Builder(context)
 				.setDefaults(defaults)
@@ -128,12 +120,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 		String msgcnt = extras.getString("msgcnt");
 		if (msgcnt != null) {
 			mBuilder.setNumber(Integer.parseInt(msgcnt));
-		} else {
-			setOptAutoMessageCount(context, mBuilder);
 		}
-
+		
 		int notId = 0;
-
+		
 		try {
 			notId = Integer.parseInt(extras.getString("notId"));
 		}
@@ -143,43 +133,23 @@ public class GCMIntentService extends GCMBaseIntentService {
 		catch(Exception e) {
 			Log.e(TAG, "Number format exception - Error parsing Notification ID" + e.getMessage());
 		}
-
+		
 		mNotificationManager.notify((String) appName, notId, mBuilder.build());
 	}
-
-	private void setOptAutoMessageCount(Context context, NotificationCompat.Builder mBuilder) {
-		SharedPreferences sp = context.getSharedPreferences(PushPlugin.TAG, Context.MODE_PRIVATE);
-		int count = sp.getInt(PushPlugin.MESSAGE_COUNT, -1);
-		if (count >= 0){
-			count += 1;
-			mBuilder.setNumber(count);
-			SharedPreferences.Editor editor = sp.edit();
-			editor.putInt(PushPlugin.MESSAGE_COUNT, count);
-			editor.commit();
-		}
-	}
-
+	
 	private static String getAppName(Context context)
 	{
-		CharSequence appName =
+		CharSequence appName = 
 				context
 					.getPackageManager()
 					.getApplicationLabel(context.getApplicationInfo());
+		
 		return (String)appName;
 	}
-
+	
 	@Override
 	public void onError(Context context, String errorId) {
 		Log.e(TAG, "onError - errorId: " + errorId);
-	}
-
-	private void startBackgroundService(Context context, Intent intent, String serviceClassName)
-	{
-		Log.d(TAG, "startBackgroundService");
-		Intent serviceIntent = new Intent();
-		serviceIntent.putExtras(intent);
-		serviceIntent.setClassName(context.getApplicationContext(), serviceClassName);
-		startService(serviceIntent);
 	}
 
 }
