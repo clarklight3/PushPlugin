@@ -2,7 +2,6 @@ package com.plugin.gcm;
 
 import android.app.NotificationManager;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import com.google.android.gcm.GCMRegistrar;
@@ -25,17 +24,13 @@ public class PushPlugin extends CordovaPlugin {
 
 	public static final String REGISTER = "register";
 	public static final String UNREGISTER = "unregister";
-	public static final String SET_AUTO_MESSAGE_COUNT = "setAutoMessageCount";
-	public static final String MESSAGE_COUNT = "messageCount";
 	public static final String EXIT = "exit";
 
 	private static CordovaWebView gWebView;
 	private static String gECB;
 	private static String gSenderID;
 	private static Bundle gCachedExtras = null;
-	private static boolean gForeground = false;
-	private static boolean gReceiveNotificationInBackground = false;
-	private static boolean gStartServiceAlwaysInBackground = false;
+    private static boolean gForeground = false;
 
 	/**
 	 * Gets the application context from cordova's main activity.
@@ -67,12 +62,6 @@ public class PushPlugin extends CordovaPlugin {
 
 				Log.v(TAG, "execute: ECB=" + gECB + " senderID=" + gSenderID);
 
-				// Configuration options for background processing
-				// When receiveNotificationInBackground is true, please use e.g. following plugin
-				// https://github.com/katzer/cordova-plugin-background-mode
-				gReceiveNotificationInBackground = jo.optBoolean("receiveNotificationInBackground",false);
-				gStartServiceAlwaysInBackground = jo.optBoolean("startServiceAlwaysInBackground",false);
-
 				GCMRegistrar.register(getApplicationContext(), gSenderID);
 				result = true;
 				callbackContext.success();
@@ -95,17 +84,6 @@ public class PushPlugin extends CordovaPlugin {
 			Log.v(TAG, "UNREGISTER");
 			result = true;
 			callbackContext.success();
-		} else if (SET_AUTO_MESSAGE_COUNT.equals(action)) {
-			Log.v(TAG, "setAutoMessageCount");
-			int count = data.optInt(0,0);
-			SharedPreferences sp = getApplicationContext().getSharedPreferences(TAG, Context.MODE_PRIVATE);
-			SharedPreferences.Editor editor = sp.edit();
-			if ( count >= 0 ){
-				editor.putInt(MESSAGE_COUNT, count);
-			} else {
-				editor.remove(MESSAGE_COUNT);
-			}
-			editor.commit();
 		} else {
 			result = false;
 			Log.e(TAG, "Invalid action : " + action);
@@ -143,39 +121,41 @@ public class PushPlugin extends CordovaPlugin {
 		}
 	}
 
-	@Override
-	public void initialize(CordovaInterface cordova, CordovaWebView webView) {
-		super.initialize(cordova, webView);
-		gForeground = true;
-	}
+    @Override
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+        super.initialize(cordova, webView);
+        gForeground = true;
+    }
 
 	@Override
-	public void onPause(boolean multitasking) {
-		super.onPause(multitasking);
-		gForeground = false;
-		final NotificationManager notificationManager = (NotificationManager) cordova.getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
-		notificationManager.cancelAll();
-	}
+    public void onPause(boolean multitasking) {
+        super.onPause(multitasking);
+        gForeground = false;
+        final NotificationManager notificationManager = (NotificationManager) cordova.getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
+    }
 
-	@Override
-	public void onResume(boolean multitasking) {
-		super.onResume(multitasking);
-		gForeground = true;
-	}
+    @Override
+    public void onResume(boolean multitasking) {
+        super.onResume(multitasking);
+        gForeground = true;
+         final NotificationManager notificationManager = (NotificationManager) cordova.getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
+    }
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		gForeground = false;
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        gForeground = false;
 		gECB = null;
 		gWebView = null;
-	}
+    }
 
-	/*
-	 * serializes a bundle to JSON.
-	 */
-	private static JSONObject convertBundleToJson(Bundle extras)
-	{
+    /*
+     * serializes a bundle to JSON.
+     */
+    private static JSONObject convertBundleToJson(Bundle extras)
+    {
 		try
 		{
 			JSONObject json;
@@ -253,17 +233,15 @@ public class PushPlugin extends CordovaPlugin {
 			Log.e(TAG, "extrasToJSON: JSON exception");
 		}
 		return null;
-	}
+    }
 
-	public static boolean isInForeground(){ return gForeground;}
+    public static boolean isInForeground()
+    {
+      return gForeground;
+    }
 
-	public static boolean isActive() {return gWebView != null;}
-
-	public static boolean receiveNotificationInBackground() {
-		return gReceiveNotificationInBackground;
-	}
-
-	public static boolean startServiceAlwaysInBackground() {
-		return gStartServiceAlwaysInBackground;
-	}
+    public static boolean isActive()
+    {
+    	return gWebView != null;
+    }
 }
