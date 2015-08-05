@@ -63,11 +63,6 @@ PushNotification.prototype.setApplicationIconBadgeNumber = function(successCallb
 
     cordova.exec(successCallback, errorCallback, "PushPlugin", "setApplicationIconBadgeNumber", [{badge: badge}]);
 };
- if ( device.platform == 'ios' || device.platform == 'IOS' || device.platform == 'iOS'){
-// Call this to set/reset/unset auto increment of android message number
-PushNotification.prototype.setAutoMessageCount = function(count) {
-    cordova.exec(null, null, "PushPlugin", "setAutoMessageCount", [count]);
-};
 
 // https://github.com/phonegap-build/PushPlugin/issues/288#issuecomment-72121589
 //Try to change the function's name below to didCompleteBackgroundProcess
@@ -88,7 +83,7 @@ PushNotification.prototype.backgroundDone = function(successCallback, errorCallb
 
      cordova.exec(successCallback, errorCallback, "PushPlugin", "didCompleteBackgroundProcess", []);
 }
-};
+
 //-------------------------------------------------------------------
 
 if(!window.plugins) {
