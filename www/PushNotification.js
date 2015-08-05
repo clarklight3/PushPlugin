@@ -73,11 +73,11 @@ PushNotification.prototype.setAutoMessageCount = function(count) {
 PushNotification.prototype.backgroundDone = function(successCallback, errorCallback) {
     if (errorCallback == null) { errorCallback = function() {
         // Try to add in the Javascript function here!!!!
-          iossync();
+         // iossync();
     }}
 
     if (typeof successCallback != "function") {
-          iossync();
+          //iossync();
         console.log("PushNotification.backgroundDone failure: success callback parameter must be a function");
         return
     }
