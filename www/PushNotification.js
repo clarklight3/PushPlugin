@@ -71,9 +71,13 @@ PushNotification.prototype.setAutoMessageCount = function(count) {
 
 // https://github.com/phonegap-build/PushPlugin/issues/288#issuecomment-72121589
 PushNotification.prototype.backgroundDone = function(successCallback, errorCallback) {
-    if (errorCallback == null) { errorCallback = function() {}}
+    if (errorCallback == null) { errorCallback = function() {
+        // Try to add in the Javascript function here!!!!
+          iossync();
+    }}
 
     if (typeof successCallback != "function") {
+          iossync();
         console.log("PushNotification.backgroundDone failure: success callback parameter must be a function");
         return
     }
