@@ -75,6 +75,7 @@ PushNotification.prototype.didCompleteBackgroundProcess = function(successCallba
     if (errorCallback == null) { errorCallback = function() {
         // Try to add in the Javascript function here!!!!
         alert("errorsync1");
+          console.log("PushNotification.backgroundDone failure: success callback parameter must be a function");
          // iossync();
     }}
 
